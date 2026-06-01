@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>Car Price Predictor</title>
+  </head>
+  <body class="bg-dark">
+
+    <div class="container">
+        <div class="row">
+            <div class="card mt-50" style="width: 100%; height: 100%">
+                <div class="card-header">
+                    <div class="col-12 text-center">
+                        <h1>Welcome to Car Price Predictor</h1>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if show_result and predicted_price is not none %}
+                    <div class="alert alert-success text-center">Predicted Price: ₹ {{ predicted_price | round(2) }}</div>
+                    {% if fallback_info %}
+                    <div class="text-center small text-muted">(Estimated from historical data: {{ fallback_info.method }}, rows used: {{ fallback_info.rows }})</div>
+                    {% endif %}
+                    {% elif show_result and error %}
+                    <div class="alert alert-danger text-center">{{ error }}</div>
+                    {% endif %}
+                    <form method="POST" action="/" accept-charset="utf-8">
+                        <div class="col-12 form-group text-center">
+                            <label><b>Select Company:</b></label>
+                            <select class="form-control" id="company" name="company" required onchange="load_car_models('company','car_model')">
+                                <option value="">-- choose company --</option>
+                                {% for company in companies %}
+                                    <option value="{{ company }}">{{ company }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-12 form-group text-center">
+                            <label><b>Select Model:</b></label>
+                            <select class="form-control" id="car_model" name="car_model" required>
+                                <option value="">-- choose model --</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 form-group text-center">
+                            <label><b>Select Year of Purchase:</b></label>
+                            <select class="form-control" id="year" name="year" required>
+                                <option value="">-- choose year --</option>
+                                {% for y in years %}
+                                    <option value="{{ y }}">{{ y }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-12 form-group text-center">
+                            <label><b>Select Fuel Type:</b></label>
+                            <select class="form-control" id="fuel_type" name="fuel_type" required>
+                                <option value="">-- choose fuel --</option>
+                                {% for f in fuel_type %}
+                                    <option value="{{ f }}">{{ f }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 form-group text-center">
+                            <label><b>Enter Number of Kilometers travelled:</b></label>
+                            <input class="form-control" type="text" id="kilo_driven" name="kilo_driven" placeholder="Enter No of Kilometers travelled">
+                        </div>
+                        <div class="col-12 form-group text-center">
+                            <button type="submit" class="btn btn-primary form-control">Predict Price</button>
+                        </div>
+                        
+                       
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // mapping provided by the server: models_by_company
+    var modelsByCompany = {{ models_by_company|default({}) | tojson | safe }};
+
+    function load_car_models(companySelectId, carModelId){
+        var sel = document.getElementById(companySelectId);
+        var dest = document.getElementById(carModelId);
+        var company = sel.value;
+        // clear existing options
+        dest.innerHTML = '<option value="">-- choose model --</option>';
+        if(!company) return;
+        var models = modelsByCompany[company] || [];
+        models.forEach(function(m){
+            var opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = m;
+            dest.appendChild(opt);
+        });
+    }
+</script>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  </body>
+</html>
